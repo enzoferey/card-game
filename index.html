@@ -16,9 +16,10 @@
 	<div id="cards-container"></div>
 
 	<script>
+		// Array of card values
 		var values = [
-			"card1", "", "card3",
-			"card1", "", "card3",
+			"card1", "card2", "card3",
+			"card1", "card2", "card3",
 			"card4", "card5", "card6",
 			"card4", "card5", "card6",
 			"card7", "card8", "card9",
@@ -26,24 +27,89 @@
 			"card10", "card10"
 		];
 
-		var click1 = 0;
-		var click2 = 5;
+		// Shuffle the card values
+		values = shuffle(values);
 
+		// Function to shuffle an array
+		function shuffle(array) {
+		    let counter = array.length;
+
+		    // While there are elements in the array
+		    while (counter > 0) {
+		        // Pick a random index
+		        let index = Math.floor(Math.random() * counter);
+
+		        // Decrease counter by 1
+		        counter--;
+
+		        // And swap the last element with it
+		        let temp = array[counter];
+		        array[counter] = array[index];
+		        array[index] = temp;
+		    }
+
+		    return array;
+		}
+
+		// Indexes of the cards the user clicks
+		var click1 = -1;
+		var click2 = -1;
+
+		// Number of pairs done until now
+		var pairs = 0;		
+
+		// Draw initial cards on screen
 		drawCards();
 
+		// Function to handle the click on a card
+		function handleClick(index) {
+			if(click1 == -1) { // if it's the first card clicked
+				click1 = index;
+				drawCards();
+			} else if (click2 == -1) { // if it's the second card clicked
+				click2 = index;
+				drawCards();
+				setTimeout(checkPairs, 1000); // call checkPairs() in 1 second
+			}
+		}
+
+		function checkPairs() {
+			// Check same values on both clicked indexes
+			if(values[click1] == values[click2]) {
+				values[click1] = ""; // "erase" card
+				values[click2] = ""; // "erase" card
+				pairs = pairs + 1;
+
+				// Win condition
+				if(pairs == 10) {
+					$("#cards-container").html(''); // delete all content
+					$("#cards-container").append('<br><br><br><h1>You won !</h1>');
+					return;
+				}
+			}
+
+			// Reset clicks to start a new turn
+			click1 = -1;
+			click2 = -1;
+
+			drawCards();
+		}
+
 		function drawCards() {
+			// delete all content in div id=cards-container
+			$("#cards-container").html('');
 			for(var i = 0; i < 20; i++) {
-				if(values[i] == "") {
+				if(values[i] == "") { // if the card was erased
 					$("#cards-container").append('<div class="card found"></div>');
 				}
-				else if(i == click1) {
+				else if(i == click1) { // if the card was clicked in first place
 					$("#cards-container").append('<img class="card" src="cards/' + values[click1] + '.png">');
 				}
-				else if(i == click2) {
+				else if(i == click2) { // if the card was clicked in second place
 					$("#cards-container").append('<img class="card" src="cards/' + values[click2] + '.png">');
 				}
-				else {
-					$("#cards-container").append('<img class="card" src="cards/reverse.png">');
+				else { // if the card wasn't clicked
+					$("#cards-container").append('<img class="card" src="cards/reverse.png" onclick="handleClick(' + i + ')">');
 				}
 			}
 		}
